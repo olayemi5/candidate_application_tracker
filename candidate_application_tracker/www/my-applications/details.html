@@ -1,0 +1,80 @@
+{%- extends "templates/web.html" -%}
+
+{%- block title -%}Application Details{%- endblock -%}
+
+{%- block page_content -%}
+<div class="container my-5">
+    <a href="/my-applications" class="text-muted mb-3 d-inline-block">&larr; Back to My Applications</a>
+
+    <div id="detail-loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div id="detail-content" style="display:none;">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0" id="detail-job-title"></h4>
+                <span id="detail-status" class="badge"></span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Applicant:</strong> <span id="detail-name"></span></p>
+                        <p><strong>Email:</strong> <span id="detail-email"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Date Applied:</strong> <span id="detail-date"></span></p>
+                        <p><strong>Reference:</strong> <span id="detail-ref"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-cover" class="card mb-4" style="display:none;">
+            <div class="card-header"><strong>Cover Letter</strong></div>
+            <div class="card-body">
+                <div id="detail-cover"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{%- endblock -%}
+
+{%- block script -%}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var pathParts = window.location.pathname.split("/");
+    var appName = pathParts[pathParts.length - 1];
+
+    frappe.call({
+        method: "candidate_application_tracker.api.tracker.get_application_detail",
+        args: { application_name: appName },
+        callback: function (r) {
+            document.getElementById("detail-loading").style.display = "none";
+            var d = r.message;
+            if (!d) return;
+
+            document.getElementById("detail-content").style.display = "block";
+            document.getElementById("detail-job-title").textContent = d.job_title_name || "N/A";
+            document.getElementById("detail-name").textContent = d.applicant_name || "";
+            document.getElementById("detail-email").textContent = d.email_id || "";
+            document.getElementById("detail-date").textContent = frappe.datetime.str_to_user(d.creation);
+            document.getElementById("detail-ref").textContent = d.name || "";
+
+            var statusEl = document.getElementById("detail-status");
+            var statusClass = {
+                "Open": "bg-primary", "Replied": "bg-info",
+                "Accepted": "bg-success", "Rejected": "bg-danger", "Hold": "bg-warning",
+            }[d.status] || "bg-secondary";
+            statusEl.className = "badge " + statusClass;
+            statusEl.textContent = d.status;
+
+            if (d.cover_letter && d.cover_letter.trim()) {
+                document.getElementById("section-cover").style.display = "block";
+                document.getElementById("detail-cover").innerHTML = d.cover_letter;
+            }
+        },
+    });
+});
+</script>
+{%- endblock -%}

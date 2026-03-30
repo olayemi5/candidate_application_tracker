@@ -1,0 +1,77 @@
+{%- extends "templates/web.html" -%}
+
+{%- block title -%}My Applications{%- endblock -%}
+
+{%- block page_content -%}
+<div class="container my-5">
+    <h3>My Applications</h3>
+    <p class="text-muted">Track the status of your job applications.</p>
+
+    <div id="applications-loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted">Loading your applications...</p>
+    </div>
+
+    <div id="no-applications" class="text-center py-5" style="display:none;">
+        <p class="text-muted">You have not submitted any applications yet.</p>
+    </div>
+
+    <div id="applications-list" style="display:none;">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Date Applied</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="applications-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{%- endblock -%}
+
+{%- block script -%}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    frappe.call({
+        method: "candidate_application_tracker.api.tracker.get_my_applications",
+        callback: function (r) {
+            document.getElementById("applications-loading").style.display = "none";
+            var apps = r.message || [];
+            if (!apps.length) {
+                document.getElementById("no-applications").style.display = "block";
+                return;
+            }
+            document.getElementById("applications-list").style.display = "block";
+            var tbody = document.getElementById("applications-tbody");
+            apps.forEach(function (app) {
+                var statusClass = {
+                    "Open": "primary",
+                    "Replied": "info",
+                    "Accepted": "success",
+                    "Rejected": "danger",
+                    "Hold": "warning",
+                }[app.status] || "secondary";
+
+                var date = frappe.datetime.str_to_user(app.creation);
+                var row = document.createElement("tr");
+                row.style.cursor = "pointer";
+                row.onclick = function () {
+                    window.location.href = "/my-applications/" + app.name;
+                };
+                row.innerHTML =
+                    '<td>' + (app.job_title_name || "N/A") + '</td>' +
+                    '<td>' + date + '</td>' +
+                    '<td><span class="badge bg-' + statusClass + '">' + app.status + '</span></td>' +
+                    '<td><a href="/my-applications/' + app.name + '" class="btn btn-sm btn-outline-primary">View</a></td>';
+                tbody.appendChild(row);
+            });
+        },
+    });
+});
+</script>
+{%- endblock -%}

@@ -1,0 +1,15 @@
+.dir-locals.el
+sitecustomize.py
+__pycache__
+*.py[cod]
+*.egg-info
+*.egg
+dist/
+build/
+.eggs/
+*.swp
+*~
+.vscode/
+.idea/
+node_modules/
+.env
