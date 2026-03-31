@@ -9,6 +9,7 @@ build/
 .eggs/
 *.swp
 *~
+.vs/
 .vscode/
 .idea/
 node_modules/

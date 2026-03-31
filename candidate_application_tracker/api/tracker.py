@@ -1,12 +1,11 @@
 import frappe
+from frappe.utils import sanitize_html
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=False)
 def get_my_applications():
     """Return all Job Applicant records belonging to the logged-in user."""
     user = frappe.session.user
-    if user == "Guest":
-        frappe.throw("Please log in to view your applications.", frappe.AuthenticationError)
 
     applications = frappe.get_all(
         "Job Applicant",
@@ -26,12 +25,13 @@ def get_my_applications():
     return applications
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=False)
 def get_application_detail(application_name):
     """Return detail of a single Job Applicant record for the logged-in user."""
     user = frappe.session.user
-    if user == "Guest":
-        frappe.throw("Please log in to view your applications.", frappe.AuthenticationError)
+
+    if not application_name or not frappe.db.exists("Job Applicant", application_name):
+        frappe.throw("Application not found.", frappe.DoesNotExistError)
 
     doc = frappe.get_doc("Job Applicant", application_name)
     if doc.email_id != user:
@@ -49,5 +49,5 @@ def get_application_detail(application_name):
         "job_title_name": job_title_name,
         "status": doc.status,
         "creation": doc.creation,
-        "cover_letter": doc.cover_letter,
+        "cover_letter": sanitize_html(doc.cover_letter or ""),
     }

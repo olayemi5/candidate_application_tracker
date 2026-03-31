@@ -5,5 +5,6 @@ no_cache = 1
 
 def get_context(context):
     if frappe.session.user == "Guest":
-        frappe.throw("Please log in to view your applications.", frappe.AuthenticationError)
+        frappe.local.flags.redirect_location = "/login?redirect-to=/my-applications"
+        raise frappe.Redirect
     context.no_cache = 1

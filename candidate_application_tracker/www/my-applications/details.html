@@ -44,7 +44,12 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     var pathParts = window.location.pathname.split("/");
-    var appName = pathParts[pathParts.length - 1];
+    var appName = decodeURIComponent(pathParts[pathParts.length - 1]);
+
+    if (!appName || appName === "my-applications") {
+        window.location.href = "/my-applications";
+        return;
+    }
 
     frappe.call({
         method: "candidate_application_tracker.api.tracker.get_application_detail",
