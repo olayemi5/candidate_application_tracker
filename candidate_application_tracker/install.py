@@ -41,6 +41,5 @@ def _ensure_portal_menu_item():
         "title": "My Applications",
         "enabled": 1,
         "route": "/my-applications",
-        "role": "Website User",
     })
     doc.save(ignore_permissions=True)

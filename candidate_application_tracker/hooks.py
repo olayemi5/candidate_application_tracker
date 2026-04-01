@@ -14,7 +14,7 @@ website_route_rules = [
 
 # Add portal menu entry
 portal_menu_items = [
-    {"title": "My Applications", "route": "/my-applications", "role": "Website User"},
+    {"title": "My Applications", "route": "/my-applications"},
 ]
 
 # Allow website users to read their own Job Applicant records
