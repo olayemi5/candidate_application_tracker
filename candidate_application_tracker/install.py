@@ -4,6 +4,7 @@ import frappe
 def after_install():
     """Ensure Job Applicant is accessible via portal for website users."""
     _ensure_webview_permission()
+    _ensure_portal_menu_item()
     frappe.db.commit()
 
 
@@ -28,3 +29,18 @@ def _ensure_webview_permission():
         "delete": 0,
         "permlevel": 0,
     }).insert(ignore_permissions=True)
+
+
+def _ensure_portal_menu_item():
+    """Add 'My Applications' to Portal Settings sidebar if missing."""
+    if frappe.db.exists("Portal Menu Item", {"route": "/my-applications"}):
+        return
+
+    doc = frappe.get_doc("Portal Settings")
+    doc.append("menu", {
+        "title": "My Applications",
+        "enabled": 1,
+        "route": "/my-applications",
+        "role": "Website User",
+    })
+    doc.save(ignore_permissions=True)
